@@ -288,3 +288,195 @@ def render_predictive_patient_report(patient_id: int):
             'oxygen_saturation': latest_vitals['oxygen_saturation'],
             'blood_pressure_systolic': latest_vitals['blood_pressure_systolic']
         }
+        
+        # Advanced sepsis prediction
+        patient_data = {
+            'age': patient_info['age'],
+            'diagnosis': patient_info['diagnosis']
+        }
+        
+        sepsis_analysis = advanced_sepsis_prediction(patient_data, vitals_history, lab_results)
+        
+        # Length of stay prediction
+        admission_date = pd.to_datetime(patient_info['admission_date'])
+        current_day = (datetime.now() - admission_date).days + 1
+        
+        los_prediction = predict_length_of_stay(patient_data, vitals_dict, lab_results, current_day)
+        
+        # Discharge readiness
+        discharge_readiness = generate_discharge_readiness_score(patient_data, vitals_dict, lab_results)
+        
+        # Display predictions
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Análise de Risco de Sepse")
+            
+            # Sepsis risk gauge
+            fig_sepsis = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=sepsis_analysis['sepsis_probability'],
+                domain={'x': [0, 1], 'y': [0, 1]},
+                title={'text': "Probabilidade de Sepse (%)"},
+                gauge={
+                    'axis': {'range': [None, 100]},
+                    'bar': {'color': "darkred"},
+                    'steps': [
+                        {'range': [0, 30], 'color': "lightgreen"},
+                        {'range': [30, 60], 'color': "yellow"},
+                        {'range': [60, 100], 'color': "lightcoral"}
+                    ],
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 60
+                    }
+                }
+            ))
+            fig_sepsis.update_layout(height=300)
+            st.plotly_chart(fig_sepsis, use_container_width=True)
+            
+            st.write(f"**Status Atual:** {sepsis_analysis['status'].title()}")
+            st.write(f"**Confiança da Predição:** {sepsis_analysis['confidence']*100:.1f}%")
+            st.write(f"**Tempo Estimado para Onset:** {sepsis_analysis['predicted_onset_hours']} horas")
+            st.write(f"**Score SIRS:** {sepsis_analysis['sirs_score']}/4")
+            
+            if sepsis_analysis['risk_factors']:
+                st.write("**Fatores de Risco Identificados:**")
+                for factor in sepsis_analysis['risk_factors']:
+                    st.write(f"• {factor}")
+        
+        with col2:
+            st.subheader("Predição de Tempo de Internação")
+            
+            # LOS prediction chart
+            days_range = list(range(current_day, current_day + 15))
+            probabilities = []
+            
+            for day in days_range:
+                if day <= los_prediction['predicted_total_los']:
+                    prob = max(0, 100 - (day - current_day) * 10)
+                else:
+                    prob = max(0, 50 - (day - los_prediction['predicted_total_los']) * 15)
+                probabilities.append(prob)
+            
+            fig_los = px.bar(
+                x=days_range,
+                y=probabilities,
+                title="Probabilidade de Permanência por Dia",
+                labels={'x': 'Dia de Internação', 'y': 'Probabilidade (%)'}
+            )
+            st.plotly_chart(fig_los, use_container_width=True)
+            
+            st.write(f"**Tempo Total Predito:** {los_prediction['predicted_total_los']} dias")
+            st.write(f"**Dias Restantes:** {los_prediction['remaining_days']} dias")
+            st.write(f"**Confiança:** {los_prediction['confidence']*100:.1f}%")
+            
+            if los_prediction['risk_factors']:
+                st.write("**Fatores que Podem Prolongar Internação:**")
+                for factor in los_prediction['risk_factors']:
+                    st.write(f"• {factor}")
+        
+        # Discharge readiness section
+        st.markdown("---")
+        st.subheader("Análise de Prontidão para Alta")
+        
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            # Discharge readiness gauge
+            fig_discharge = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=discharge_readiness['discharge_score'],
+                domain={'x': [0, 1], 'y': [0, 1]},
+                title={'text': "Score de Prontidão (0-100)"},
+                gauge={
+                    'axis': {'range': [None, 100]},
+                    'bar': {'color': "darkblue"},
+                    'steps': [
+                        {'range': [0, 40], 'color': "lightcoral"},
+                        {'range': [40, 60], 'color': "yellow"},
+                        {'range': [60, 80], 'color': "lightgreen"},
+                        {'range': [80, 100], 'color': "green"}
+                    ]
+                }
+            ))
+            fig_discharge.update_layout(height=250)
+            st.plotly_chart(fig_discharge, use_container_width=True)
+        
+        with col2:
+            st.write(f"**Nível de Prontidão:** {discharge_readiness['readiness_level']}")
+            
+            if discharge_readiness['discharge_score'] >= 80:
+                st.success("Paciente apresenta alta probabilidade de alta médica em breve")
+            elif discharge_readiness['discharge_score'] >= 60:
+                st.warning("Paciente requer monitoramento próximo antes da alta")
+            elif discharge_readiness['discharge_score'] >= 40:
+                st.error("Paciente ainda requer cuidados intensivos")
+            else:
+                st.error("Paciente em condição crítica - alta não recomendada")
+        
+        # Statistical trends
+        st.markdown("---")
+        st.subheader("Análise de Tendências dos Sinais Vitais")
+        
+        if len(vitals_history) > 1:
+            # Sort by time for trends
+            vitals_sorted = vitals_history.sort_values('recorded_at')
+            
+            # Temperature trend
+            fig_temp_trend = px.line(
+                vitals_sorted, 
+                x='recorded_at', 
+                y='temperature',
+                title="Tendência da Temperatura (últimas 48h)"
+            )
+            fig_temp_trend.add_hline(y=38.0, line_dash="dash", line_color="red", annotation_text="Limite Febre")
+            fig_temp_trend.add_hline(y=36.0, line_dash="dash", line_color="blue", annotation_text="Limite Hipotermia")
+            st.plotly_chart(fig_temp_trend, use_container_width=True)
+            
+            # Heart rate and blood pressure trends
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig_hr = px.line(
+                    vitals_sorted,
+                    x='recorded_at',
+                    y='heart_rate', 
+                    title="Frequência Cardíaca"
+                )
+                fig_hr.add_hline(y=90, line_dash="dash", line_color="orange", annotation_text="Limite Taquicardia")
+                st.plotly_chart(fig_hr, use_container_width=True)
+            
+            with col2:
+                fig_bp = px.line(
+                    vitals_sorted,
+                    x='recorded_at',
+                    y='blood_pressure_systolic',
+                    title="Pressão Arterial Sistólica"
+                )
+                fig_bp.add_hline(y=90, line_dash="dash", line_color="red", annotation_text="Limite Hipotensão")
+                st.plotly_chart(fig_bp, use_container_width=True)
+        
+        # Clinical recommendations
+        st.markdown("---")
+        st.subheader("Recomendações Clínicas Baseadas em IA")
+        
+        if sepsis_analysis['sepsis_probability'] > 60:
+            st.error("**AÇÃO IMEDIATA REQUERIDA:**")
+            st.write("• Ativar protocolo de sepse")
+            st.write("• Coletar hemoculturas e lactato")
+            st.write("• Considerar administração precoce de antibióticos")
+            st.write("• Monitorização contínua de sinais vitais")
+        elif sepsis_analysis['sepsis_probability'] > 30:
+            st.warning("**MONITORIZAÇÃO INTENSIFICADA:**")
+            st.write("• Verificar sinais vitais a cada 15-30 minutos")
+            st.write("• Considerar exames laboratoriais adicionais")
+            st.write("• Reavaliar em 1-2 horas")
+        else:
+            st.success("**MONITORIZAÇÃO DE ROTINA:**")
+            st.write("• Continuar plano de cuidados atual")
+            st.write("• Sinais vitais conforme protocolo padrão")
+    
+    else:
+        st.warning("Dados de sinais vitais insuficientes para análise preditiva.")
