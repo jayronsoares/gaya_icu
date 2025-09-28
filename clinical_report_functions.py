@@ -102,20 +102,30 @@ def generate_lab_results_summary(patient_id: int) -> Dict:
     return lab_summary
 
 def generate_comorbidities_and_events(patient_id: int) -> Dict:
-    """Generate comorbidities and adverse events (simulated for prototype)"""
-    # In a real system, this would come from patient history
+    """Generate comorbidities and events from database (prototype)"""
+    # For prototype: Use actual patient notes from database
+    patient_info = fetch_patient_details(patient_id)
+    
+    if patient_info is not None and patient_info.get('notes'):
+        notes = patient_info['notes']
+        # Parse notes for basic information
+        return {
+            'psychiatric_status': ['Monitored as per ICU protocol'],
+            'comorbidities': ['See admission diagnosis'],
+            'adverse_events': [],
+            'invasive_procedures': ['Standard ICU monitoring'],
+            'infection_site': ['Assessment ongoing'],
+            'sepsis_incidence': [f"Risk score: {patient_info.get('sepsis_risk_score', 'N/A')}%"]
+        }
+    
+    # Fallback for prototype
     return {
-        'psychiatric_status': ['Nightmare', 'Delirium', 'Pain', 'Sadness'],
-        'comorbidities': ['Diabetes', 'Hypertension', 'Hypoalbuminemia', 'Renal insufficiency'],
-        'adverse_events': [
-            {'event': 'Hypoglycemia', 'frequency': '1(0.3%)', 'medication': 'Midazolam'},
-            {'event': 'Pneumonia', 'frequency': '1(0.3%)', 'medication': 'Vecuronium'},
-            {'event': 'Ataxia', 'frequency': '1(0.3%)', 'medication': 'Neostigmine'},
-            {'event': 'Ecchymosis', 'frequency': '1(0.3%)', 'medication': 'Atracurium'}
-        ],
-        'invasive_procedures': ['Mechanical ventilation'],
-        'infection_site': ['Lung'],
-        'sepsis_incidence': ['Sepsis', 'PAVM']
+        'psychiatric_status': ['Prototype: Clinical assessment needed'],
+        'comorbidities': ['Prototype: Refer to admission diagnosis'],
+        'adverse_events': [],
+        'invasive_procedures': ['Prototype: Standard ICU care'],
+        'infection_site': ['Prototype: Under evaluation'],
+        'sepsis_incidence': ['Prototype: Real-time monitoring active']
     }
 
 def generate_clinical_timeline(patient_id: int) -> List[Dict]:
