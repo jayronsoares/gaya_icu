@@ -7,26 +7,43 @@ from typing import Dict, List, Tuple, Optional
 def create_connection():
     """Create PostgreSQL database connection"""
     try:
-        # Try to use secrets first, fallback to hardcoded values for development
-        try:
-            user = st.secrets['user']
-            password = st.secrets['password']
-            host = st.secrets['host']
-            database = st.secrets['database']
-            port = st.secrets['port']
-        except KeyError:
-            # Fallback to hardcoded values - REPLACE WITH YOUR ACTUAL SUPABASE PASSWORD
-            user = "postgres"
-            password = "eYn2cDB85DebFRTI"  # Get this from Supabase Settings > Database
-            host = "db.izpjfvbgxhwrsxycyvdf.supabase.co"
-            database = "postgres"
-            port = 5432
+        # Use Streamlit secrets only
+        user = st.secrets['user']
+        password = st.secrets['password']
+        host = st.secrets['host']
+        database = st.secrets['database']
+        port = st.secrets['port']
         
-        # Use the exact connection string format from Supabase
-        connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}"
-        connection = psycopg2.connect(connection_string)
+        # Try connection with different SSL modes
+        connection_params = {
+            'host': host,
+            'database': database,
+            'user': user,
+            'password': password,
+            'port': port,
+            'sslmode': 'require',
+            'connect_timeout': 10
+        }
+        
+        connection = psycopg2.connect(**connection_params)
         return connection
-    except psycopg2.Error as e:
+        
+    except KeyError as e:
+        st.error(f"Missing secret key: {e}. Please add database credentials to Streamlit secrets.")
+        return None
+        
+    except psycopg2.OperationalError as e:
+        if "Cannot assign requested address" in str(e):
+            # Try without SSL as fallback
+            try:
+                connection_params['sslmode'] = 'prefer'
+                connection = psycopg2.connect(**connection_params)
+                return connection
+            except:
+                pass
+        st.error(f"Database connection error: {e}")
+        return None
+    except Exception as e:
         st.error(f"Database connection error: {e}")
         return None
 
