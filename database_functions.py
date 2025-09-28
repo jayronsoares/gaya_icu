@@ -1,4 +1,4 @@
-import psycopg
+import psycopg2
 import pandas as pd
 import streamlit as st
 from typing import Dict, List, Tuple, Optional
@@ -8,9 +8,16 @@ def create_connection():
     """Create Supabase PostgreSQL database connection"""
     try:
         connection_string = f"postgresql://{st.secrets['supabase']['user']}:{st.secrets['supabase']['password']}@{st.secrets['supabase']['host']}:{st.secrets['supabase']['port']}/{st.secrets['supabase']['database']}?sslmode=require"
-        connection = psycopg.connect(connection_string)
+        connection = psycopg2.connect(
+            host=st.secrets['supabase']['host'],
+            database=st.secrets['supabase']['database'],
+            user=st.secrets['supabase']['user'],
+            password=st.secrets['supabase']['password'],
+            port=st.secrets['supabase']['port'],
+            sslmode='require'
+        )
         return connection
-    except psycopg.Error as e:
+    except psycopg2.Error as e:
         st.error(f"Supabase connection error: {e}")
         return None
 
