@@ -17,7 +17,7 @@ def create_connection():
         except KeyError:
             # Fallback to hardcoded values - REPLACE WITH YOUR ACTUAL SUPABASE PASSWORD
             user = "postgres"
-            password = "M1ner@!Bemisa"  # Get this from Supabase Settings > Database
+            password = "M1neralBemisa"  # Get this from Supabase Settings > Database
             host = "db.izpjfvbgxhwrsxycyvdf.supabase.co"
             database = "postgres"
             port = 5432
