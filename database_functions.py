@@ -23,14 +23,7 @@ def create_connection():
             port = 5432
         
         connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}?sslmode=require"
-        connection = psycopg2.connect(
-            host=host,
-            database=database,
-            user=user,
-            password=password,
-            port=port,
-            sslmode='require'
-        )
+        connection = psycopg2.connect(connection_string)
         return connection
     except psycopg2.Error as e:
         st.error(f"Database connection error: {e}")
