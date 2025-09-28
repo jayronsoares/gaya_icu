@@ -58,8 +58,8 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
         justify-content: space-between;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         position: relative;
-    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'; document.getElementById('menu_{patient_row['patient_id']}').style.display='block';" 
-       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'; document.getElementById('menu_{patient_row['patient_id']}').style.display='none';">
+        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';" 
+        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
         
         <div style="text-align: center;">
             <div style="color: {bed_color}; font-size: 20px; font-weight: bold; margin-bottom: 8px;">
@@ -85,32 +85,8 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
             <div><strong>HR:</strong> {patient_row.get('heart_rate', 'N/A')} | <strong>SpO2:</strong> {patient_row.get('oxygen_saturation', 'N/A')}%</div>
             <div><strong>Temp:</strong> {patient_row.get('temperature', 'N/A')}°C</div>
         </div>
-        
-        <!-- Hover Menu -->
-        <div id="menu_{patient_row['patient_id']}" style="
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.95);
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 8px;
-            display: none;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        ">
-            <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px; color: #333;">Quick Actions:</div>
-            <div style="font-size: 9px; margin-bottom: 2px; color: #007bff; cursor: pointer;" onclick="selectPatientReport({patient_row['patient_id']}, 'current')">📋 Current Report</div>
-            <div style="font-size: 9px; color: #007bff; cursor: pointer;" onclick="selectPatientReport({patient_row['patient_id']}, 'predictive')">🔮 Predictive Analysis</div>
-        </div>
     </div>
-    
-    <script>
-    function selectPatientReport(patientId, reportType) {{
-        // This would need to be handled by Streamlit buttons below
-        console.log('Selected patient:', patientId, 'Report type:', reportType);
-    }}
-    </script>
+       
     """
     
     return bed_html
