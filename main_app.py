@@ -79,9 +79,9 @@ def main():
     if 'db_tested' not in st.session_state:
         success, message = test_database_connection()
         if success:
-            st.success(f"✅ Conectado ao banco de dados: {message}")
+            st.success(f"✅ Connected to database: {message}")
         else:
-            st.error(f"❌ Erro de conexão: {message}")
+            st.error(f"❌ Connection error: {message}")
         st.session_state.db_tested = True
     
     # Navigation logic
@@ -101,7 +101,7 @@ def render_patient_report_page():
     """Render patient report with type selection"""
     
     # Back button
-    if st.button("← Voltar ao Layout dos Leitos", key="back_to_layout"):
+    if st.button("← Back to Bed Layout", key="back_to_layout"):
         st.session_state.current_page = 'bed_layout'
         st.session_state.report_type = None
         st.rerun()
@@ -109,15 +109,15 @@ def render_patient_report_page():
     patient_id = st.session_state.get('selected_patient_id')
     
     if not patient_id:
-        st.error("Nenhum paciente selecionado. Retorne ao layout dos leitos.")
+        st.error("No patient selected. Return to bed layout.")
         return
     
     # Report type selection
     if not st.session_state.get('report_type'):
         st.markdown("""
         <div class="main-header">
-            <h2>Selecione o Tipo de Relatório</h2>
-            <p>Escolha entre o relatório atual do paciente ou análise preditiva</p>
+            <h2>Select Report Type</h2>
+            <p>Choose between current patient report or predictive analysis</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -126,24 +126,24 @@ def render_patient_report_page():
         with col1:
             st.markdown("""
             <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; margin: 10px;">
-                <h3>📋 Relatório Atual</h3>
-                <p>Perfil completo do paciente com dados atuais, sinais vitais, resultados de exames e histórico clínico</p>
+                <h3>📋 Current Report</h3>
+                <p>Complete patient profile with current data, vital signs, test results and clinical history</p>
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Acessar Relatório Atual", key="current_report", use_container_width=True):
+            if st.button("Access Current Report", key="current_report", use_container_width=True):
                 st.session_state.report_type = 'current'
                 st.rerun()
         
         with col2:
             st.markdown("""
             <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; margin: 10px;">
-                <h3>🔮 Relatório Preditivo</h3>
-                <p>Análise estatística com predições de sepse, tempo de internação e recomendações baseadas em IA</p>
+                <h3>🔮 Predictive Report</h3>
+                <p>Statistical analysis with sepsis predictions, length of stay and AI-based recommendations</p>
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Acessar Relatório Preditivo", key="predictive_report", use_container_width=True):
+            if st.button("Access Predictive Report", key="predictive_report", use_container_width=True):
                 st.session_state.report_type = 'predictive'
                 st.rerun()
     
@@ -152,12 +152,12 @@ def render_patient_report_page():
         col1, col2, col3 = st.columns([1, 1, 2])
         
         with col1:
-            if st.button("📋 Relatório Atual", key="switch_current"):
+            if st.button("📋 Current Report", key="switch_current"):
                 st.session_state.report_type = 'current'
                 st.rerun()
         
         with col2:
-            if st.button("🔮 Relatório Preditivo", key="switch_predictive"):
+            if st.button("🔮 Predictive Report", key="switch_predictive"):
                 st.session_state.report_type = 'predictive'
                 st.rerun()
         
