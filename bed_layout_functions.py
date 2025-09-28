@@ -42,64 +42,8 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
     diagnosis = str(patient_row.get('diagnosis', 'N/A'))
     short_diagnosis = diagnosis[:25] + '...' if len(diagnosis) > 25 else diagnosis
     
-    bed_html = f"""
-    <div style="
-        border: 3px solid {bed_color};
-        border-radius: 12px;
-        padding: 15px;
-        margin: 8px;
-        background: linear-gradient(135deg, #ffffff 0%, {bed_color}15 100%);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-height: 180px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        position: relative;
-    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';" 
-       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
-        
-        <div style="text-align: center;">
-            <div style="color: {bed_color}; font-size: 20px; font-weight: bold; margin-bottom: 8px;">
-                {patient_row['bed_number']}
-            </div>
-            <i class="fas fa-bed" style="font-size: 24px; color: {bed_color}; margin: 0 auto 10px auto;"></i>
-        </div>
-        
-        <div style="text-align: center; flex-grow: 1;">
-            <div style="font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #333;">
-                {patient_row['patient_name']}
-            </div>
-            <div style="font-size: 12px; margin-bottom: 3px; color: #666;">
-                <strong>Age:</strong> {patient_row['age']} | <strong>Gender:</strong> {patient_row['gender']}
-            </div>
-            <div style="font-size: 11px; margin-bottom: 5px; color: #666;">
-                <strong>Diagnosis:</strong> {short_diagnosis}
-            </div>
-        </div>
-        
-        <div style="text-align: center; font-size: 11px; color: #666;">
-            <div><strong>Days:</strong> {days_admitted} | <strong>Risk:</strong> {risk_score:.0f}%</div>
-            <div><strong>HR:</strong> {patient_row.get('heart_rate', 'N/A')} | <strong>SpO2:</strong> {patient_row.get('oxygen_saturation', 'N/A')}%</div>
-            <div><strong>Temp:</strong> {patient_row.get('temperature', 'N/A')}°C</div>
-        </div>
-        
-        <!-- Patient ID display -->
-        <div style="
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 4px;
-            padding: 4px 6px;
-            font-size: 9px;
-            color: #666;
-        ">
-            ID: {patient_row['patient_id']}
-        </div>
-    </div>
-    """
+    # FIXED: Remove line breaks and format as single line HTML
+    bed_html = f'<div style="border: 3px solid {bed_color}; border-radius: 12px; padding: 15px; margin: 8px; background: linear-gradient(135deg, #ffffff 0%, {bed_color}15 100%); cursor: pointer; transition: all 0.3s ease; min-height: 180px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 4px 12px rgba(0,0,0,0.2)\';" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.1)\';"><div style="text-align: center;"><div style="color: {bed_color}; font-size: 20px; font-weight: bold; margin-bottom: 8px;">{patient_row["bed_number"]}</div><i class="fas fa-bed" style="font-size: 24px; color: {bed_color}; margin: 0 auto 10px auto;"></i></div><div style="text-align: center; flex-grow: 1;"><div style="font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #333;">{patient_row["patient_name"]}</div><div style="font-size: 12px; margin-bottom: 3px; color: #666;"><strong>Age:</strong> {patient_row["age"]} | <strong>Gender:</strong> {patient_row["gender"]}</div><div style="font-size: 11px; margin-bottom: 5px; color: #666;"><strong>Diagnosis:</strong> {short_diagnosis}</div></div><div style="text-align: center; font-size: 11px; color: #666;"><div><strong>Days:</strong> {days_admitted} | <strong>Risk:</strong> {risk_score:.0f}%</div><div><strong>HR:</strong> {patient_row.get("heart_rate", "N/A")} | <strong>SpO2:</strong> {patient_row.get("oxygen_saturation", "N/A")}%</div><div><strong>Temp:</strong> {patient_row.get("temperature", "N/A")}°C</div></div><div style="position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.9); border-radius: 4px; padding: 4px 6px; font-size: 9px; color: #666;">ID: {patient_row["patient_id"]}</div></div>'
     
     return bed_html
 
@@ -194,29 +138,35 @@ def display_icu_statistics(stats: Dict):
         st.metric("Average Risk", f"{stats['avg_risk']:.1f}%", delta=None)
 
 def render_bed_grid(patients_df: pd.DataFrame):
-    """Render the bed grid layout"""
+    """Render the bed grid layout - FIXED HTML rendering"""
     st.markdown("### <i class='fas fa-bed'></i> Bed Layout - ICU", unsafe_allow_html=True)
     st.markdown("**Click on the bed number below to access the patient report**")
     
-    # Create bed icons HTML
-    beds_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 20px 0;">'
+    # FIXED: Render beds in smaller chunks to avoid HTML parsing issues
+    beds_per_row = 5
+    rows = [patients_df.iloc[i:i+beds_per_row] for i in range(0, len(patients_df), beds_per_row)]
     
-    for _, patient in patients_df.iterrows():
-        status, color, risk_score = determine_bed_status(patient)
-        bed_icon = create_bed_icon_html(patient, status, color, risk_score)
-        beds_html += bed_icon
-    
-    beds_html += '</div>'
-    
-    st.markdown(beds_html, unsafe_allow_html=True)
+    for row in rows:
+        # Create row HTML with proper grid layout
+        row_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 20px 0;">'
+        
+        for _, patient in row.iterrows():
+            status, color, risk_score = determine_bed_status(patient)
+            bed_icon = create_bed_icon_html(patient, status, color, risk_score)
+            row_html += bed_icon
+        
+        row_html += '</div>'
+        
+        # Render each row separately to avoid large HTML string issues
+        st.markdown(row_html, unsafe_allow_html=True)
     
     # Clickable buttons for each bed (Enhanced with direct report access)
     st.markdown("---")
     
     # Create buttons in rows of 5 with report type selection
-    rows = [patients_df.iloc[i:i+5] for i in range(0, len(patients_df), 5)]
+    button_rows = [patients_df.iloc[i:i+5] for i in range(0, len(patients_df), 5)]
     
-    for row_idx, row in enumerate(rows):
+    for row_idx, row in enumerate(button_rows):
         cols = st.columns(5)
         for idx, (_, patient) in enumerate(row.iterrows()):
             if idx < len(cols):
