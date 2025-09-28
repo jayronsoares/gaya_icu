@@ -10,41 +10,60 @@ def create_connection():
         # Use Streamlit secrets only
         user = st.secrets['user']
         password = st.secrets['password']
-        host = st.secrets['host']
         database = st.secrets['database']
-        port = st.secrets['port']
+        port = int(st.secrets['port'])
         
-        # Try connection with different SSL modes
+        # Use the IPv4-compatible pooler connection
+        pooler_host = "aws-1-us-east-2.pooler.supabase.com"
+        pooler_port = 6543  # Transaction pooler port
+        pooler_user = f"postgres.izpjfvbgxhwrsxycyvdf"  # Format: postgres.PROJECT_REF
+        
         connection_params = {
-            'host': host,
+            'host': pooler_host,
             'database': database,
-            'user': user,
+            'user': pooler_user,
             'password': password,
-            'port': port,
-            'sslmode': 'require',
-            'connect_timeout': 10
+            'port': pooler_port,
+            'connect_timeout': 30
         }
         
+        st.info("Connecting via IPv4-compatible pooler...")
         connection = psycopg2.connect(**connection_params)
+        st.success("Connected successfully via transaction pooler!")
         return connection
         
+    except psycopg2.OperationalError as e:
+        st.error(f"Pooler connection failed: {e}")
+        
+        # Fallback to direct connection (might not work on IPv4)
+        try:
+            direct_host = st.secrets['host']
+            direct_port = 5432
+            
+            fallback_params = {
+                'host': direct_host,
+                'database': database,
+                'user': user,
+                'password': password,
+                'port': direct_port,
+                'connect_timeout': 30
+            }
+            
+            st.info("Trying direct connection as fallback...")
+            connection = psycopg2.connect(**fallback_params)
+            st.success("Connected via direct connection!")
+            return connection
+            
+        except Exception as e2:
+            st.error(f"All connection methods failed. Direct connection error: {e2}")
+            return None
+            
     except KeyError as e:
         st.error(f"Missing secret key: {e}. Please add database credentials to Streamlit secrets.")
         return None
         
-    except psycopg2.OperationalError as e:
-        if "Cannot assign requested address" in str(e):
-            # Try without SSL as fallback
-            try:
-                connection_params['sslmode'] = 'prefer'
-                connection = psycopg2.connect(**connection_params)
-                return connection
-            except:
-                pass
-        st.error(f"Database connection error: {e}")
-        return None
     except Exception as e:
-        st.error(f"Database connection error: {e}")
+        st.error(f"Unexpected error: {e}")
         return None
 
 @st.cache_data(ttl=30)
