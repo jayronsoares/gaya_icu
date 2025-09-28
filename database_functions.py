@@ -109,10 +109,9 @@ def fetch_all_patients() -> pd.DataFrame:
     finally:
         conn.close()
 
-@st.cache_data(ttl=60)
 def fetch_patient_details(patient_id: int) -> Optional[pd.Series]:
-    """Fetch detailed information for specific patient"""
-    conn = create_connection()
+    """Fetch detailed information for specific patient - NO CACHING to prevent connection issues"""
+    conn = get_connection()
     if not conn:
         return None
     
@@ -131,18 +130,18 @@ def fetch_patient_details(patient_id: int) -> Optional[pd.Series]:
     
     try:
         df = pd.read_sql(query, conn, params={"patient_id": patient_id})
-        conn.close()
-        return df.iloc[0] if not df.empty else None
+        result = df.iloc[0] if not df.empty else None
+        return result
     except Exception as e:
         st.error(f"Error fetching patient details: {e}")
+        return None
+    finally:
         if conn:
             conn.close()
-        return None
 
-@st.cache_data(ttl=60)
 def fetch_patient_vitals_history(patient_id: int, hours: int = 48) -> pd.DataFrame:
-    """Fetch vital signs history for patient"""
-    conn = create_connection()
+    """Fetch vital signs history for patient - NO CACHING to prevent connection issues"""
+    conn = get_connection()
     if not conn:
         return pd.DataFrame()
     
@@ -155,18 +154,17 @@ def fetch_patient_vitals_history(patient_id: int, hours: int = 48) -> pd.DataFra
     
     try:
         df = pd.read_sql(query, conn, params={"patient_id": patient_id, "hours": hours})
-        conn.close()
         return df
     except Exception as e:
         st.error(f"Error fetching vital signs: {e}")
+        return pd.DataFrame()
+    finally:
         if conn:
             conn.close()
-        return pd.DataFrame()
 
-@st.cache_data(ttl=60)
 def fetch_patient_lab_results(patient_id: int) -> pd.DataFrame:
-    """Fetch lab results for patient"""
-    conn = create_connection()
+    """Fetch lab results for patient - NO CACHING to prevent connection issues"""
+    conn = get_connection()
     if not conn:
         return pd.DataFrame()
     
@@ -191,18 +189,18 @@ def fetch_patient_lab_results(patient_id: int) -> pd.DataFrame:
     
     try:
         df = pd.read_sql(query, conn, params={"patient_id": patient_id})
-        conn.close()
         return df
     except Exception as e:
         st.error(f"Error fetching lab results: {e}")
+        return pd.DataFrame()
+    finally:
         if conn:
             conn.close()
-        return pd.DataFrame()
 
 def test_database_connection() -> Tuple[bool, str]:
     """Test database connection"""
     try:
-        conn = create_connection()
+        conn = get_connection()  # FIXED: Use get_connection() for consistency
         if conn:
             cursor = conn.cursor()
             cursor.execute("SELECT 1")
