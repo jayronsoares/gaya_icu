@@ -16,7 +16,7 @@ def load_custom_css():
     st.markdown("""
     <style>
     .main-header {
-        background: linear-gradient(90deg, #87CEEB 0%, #87CEEB 100%);
+        background: linear-gradient(90deg, #B0E0E6 0%, #87CEEB 100%);
         color: white;
         padding: 20px;
         border-radius: 10px;
@@ -25,7 +25,7 @@ def load_custom_css():
     }
     
     .header-container {
-        background: linear-gradient(90deg, #87CEEB 0%, #87CEEB 100%);
+        background: linear-gradient(90deg, #B0E0E6 0%, #87CEEB 100%);
         color: white;
         padding: 20px;
         margin-bottom: 30px;
