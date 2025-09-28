@@ -7,13 +7,28 @@ from typing import Dict, List, Tuple, Optional
 def create_connection():
     """Create PostgreSQL database connection"""
     try:
-        connection_string = f"postgresql://{st.secrets['user']}:{st.secrets['password']}@{st.secrets['host']}:{st.secrets['port']}/{st.secrets['database']}?sslmode=require"
+        # Try to use secrets first, fallback to hardcoded values for development
+        try:
+            user = st.secrets['user']
+            password = st.secrets['password']
+            host = st.secrets['host']
+            database = st.secrets['database']
+            port = st.secrets['port']
+        except KeyError:
+            # Fallback to hardcoded values
+            user = "postgres"
+            password = "M1ner@!Bemisa"
+            host = "db.izpjfvbgxhwrsxycyvdf.supabase.co"
+            database = "postgres"
+            port = 5432
+        
+        connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}?sslmode=require"
         connection = psycopg2.connect(
-            host=st.secrets['host'],
-            database=st.secrets['database'],
-            user=st.secrets['user'],
-            password=st.secrets['password'],
-            port=st.secrets['port'],
+            host=host,
+            database=database,
+            user=user,
+            password=password,
+            port=port,
             sslmode='require'
         )
         return connection
