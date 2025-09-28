@@ -26,38 +26,12 @@ Click any bed to see detailed patient reports with predictions and recommendatio
 - **ML Models**: SIRS criteria + statistical analysis
 - **Deployment**: Streamlit Cloud
 
-## Setup
-
-1. **Clone repository**
-```bash
-git clone https://github.com/your-username/gaya_icu.git
-```
-
-2. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-3. **Setup Supabase**
-   - Create account at supabase.com
-   - Run the SQL schema to create tables
-   - Add connection details to Streamlit secrets
-
-4. **Deploy**
-   - Push to GitHub
-   - Connect to Streamlit Cloud
-   - Add database secrets
-
 ## Usage
 
 1. View ICU bed layout with real-time status
 2. Click any bed number to access patient details
 3. Choose between current report or predictive analysis
 4. Monitor critical alerts for immediate attention
-
-## Sample Data
-
-Includes 10 sample patients with realistic medical data for demonstration purposes.
 
 ## Features
 
