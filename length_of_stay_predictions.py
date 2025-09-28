@@ -100,13 +100,13 @@ def calculate_lab_severity_multiplier(lab_results: pd.DataFrame) -> float:
         elif test_name == 'Creatinine' and test_value > 1.5:
             lab_multiplier += 0.15
         
-        elif test_name == 'Bilirrubina total' and test_value > 3.0:
+        elif test_name == 'Total Bilirubin' and test_value > 3.0:
             lab_multiplier += 0.25  # Liver dysfunction
         
         elif test_name == 'pH' and (test_value < 7.25 or test_value > 7.55):
             lab_multiplier += 0.3  # Severe acid-base imbalance
         
-        elif test_name == 'Hemoglobina' and test_value < 8.0:
+        elif test_name == 'Hemoglobin' and test_value < 8.0:
             lab_multiplier += 0.2  # Severe anemia
     
     return min(lab_multiplier, 1.0)  # Cap lab multiplier
