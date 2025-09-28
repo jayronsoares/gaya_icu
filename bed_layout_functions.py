@@ -114,16 +114,18 @@ def render_icu_bed_layout():
     </div>
     """, unsafe_allow_html=True)
     
-    # Control buttons
+    # Control buttons - FIXED to prevent recursion
     col1, col2, col3 = st.columns([1, 1, 2])
     
     with col1:
-        if st.button("🔄 Refresh Data", help="Clear cache and reload patient data"):
+        if st.button("🔄 Refresh Data", help="Clear cache and reload patient data", key="refresh_data_btn"):
             st.cache_data.clear()
             st.rerun()
     
     with col2:
-        auto_refresh = st.checkbox("Auto-refresh (30s)", value=False, help="Automatically refresh data every 30 seconds")
+        # AUTO-REFRESH DISABLED to prevent infinite recursion
+        st.write("Auto-refresh: Disabled")
+        # auto_refresh = st.checkbox("Auto-refresh (30s)", value=False, help="Automatically refresh data every 30 seconds")
     
     with col3:
         st.write(f"**Last updated:** {datetime.now().strftime('%m/%d/%Y %H:%M:%S')}")
@@ -147,9 +149,7 @@ def render_icu_bed_layout():
     # Display alerts
     display_patient_alerts(patients_df)
     
-    # Auto-refresh functionality - prototype mode
-    if auto_refresh:
-        st.info("🔄 Auto-refresh enabled - data updates every 30 seconds on manual refresh")
+    # AUTO-REFRESH COMPLETELY REMOVED to prevent recursion
 
 def calculate_icu_statistics(patients_df: pd.DataFrame) -> Dict:
     """Calculate ICU statistics"""
@@ -216,7 +216,7 @@ def render_bed_grid(patients_df: pd.DataFrame):
     # Create buttons in rows of 5 with report type selection
     rows = [patients_df.iloc[i:i+5] for i in range(0, len(patients_df), 5)]
     
-    for row in rows:
+    for row_idx, row in enumerate(rows):
         cols = st.columns(5)
         for idx, (_, patient) in enumerate(row.iterrows()):
             if idx < len(cols):
@@ -227,8 +227,9 @@ def render_bed_grid(patients_df: pd.DataFrame):
                     col_a, col_b = st.columns(2)
                     
                     with col_a:
+                        # FIXED: Added unique keys to prevent conflicts
                         if st.button(f"📋 {patient['bed_number']}", 
-                                   key=f"current_{patient['patient_id']}", 
+                                   key=f"current_{patient['patient_id']}_{row_idx}_{idx}", 
                                    help=f"Current report for {patient['patient_name']}",
                                    use_container_width=True):
                             st.session_state.selected_patient_id = patient['patient_id']
@@ -237,8 +238,9 @@ def render_bed_grid(patients_df: pd.DataFrame):
                             st.rerun()
                     
                     with col_b:
+                        # FIXED: Added unique keys to prevent conflicts
                         if st.button(f"🔮 {patient['bed_number']}", 
-                                   key=f"predictive_{patient['patient_id']}", 
+                                   key=f"predictive_{patient['patient_id']}_{row_idx}_{idx}", 
                                    help=f"Predictive analysis for {patient['patient_name']}",
                                    use_container_width=True):
                             st.session_state.selected_patient_id = patient['patient_id']
@@ -277,9 +279,11 @@ def display_patient_alerts(patients_df: pd.DataFrame):
                     st.write(f"- SpO2: {patient.get('oxygen_saturation', 'N/A')} %")
                 
                 with col2:
-                    if st.button(f"📋 Complete Report", key=f"critical_report_{patient['patient_id']}"):
+                    # FIXED: Added unique key to prevent conflicts
+                    if st.button(f"📋 Complete Report", key=f"critical_report_{patient['patient_id']}_alert"):
                         st.session_state.selected_patient_id = patient['patient_id']
                         st.session_state.current_page = 'patient_report'
+                        st.session_state.report_type = 'current'
                         st.rerun()
     
     # Alert patients
@@ -292,9 +296,11 @@ def display_patient_alerts(patients_df: pd.DataFrame):
                 st.write(f"**Diagnosis:** {patient['diagnosis']}")
                 st.write(f"**Notes:** {patient.get('notes', 'Continuous monitoring recommended')}")
                 
-                if st.button(f"View Report", key=f"alert_report_{patient['patient_id']}"):
+                # FIXED: Added unique key to prevent conflicts
+                if st.button(f"View Report", key=f"alert_report_{patient['patient_id']}_warning"):
                     st.session_state.selected_patient_id = patient['patient_id']
                     st.session_state.current_page = 'patient_report'
+                    st.session_state.report_type = 'current'
                     st.rerun()
 
 def get_bed_status_legend():
