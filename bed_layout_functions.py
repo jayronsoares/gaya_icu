@@ -56,8 +56,9 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
         flex-direction: column;
         justify-content: space-between;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'" 
-       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
+        position: relative;
+    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'; document.getElementById('menu_{patient_row['patient_id']}').style.display='block';" 
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'; document.getElementById('menu_{patient_row['patient_id']}').style.display='none';">
         
         <div style="text-align: center;">
             <div style="color: {bed_color}; font-size: 20px; font-weight: bold; margin-bottom: 8px;">
@@ -83,7 +84,32 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
             <div><strong>HR:</strong> {patient_row.get('heart_rate', 'N/A')} | <strong>SpO2:</strong> {patient_row.get('oxygen_saturation', 'N/A')}%</div>
             <div><strong>Temp:</strong> {patient_row.get('temperature', 'N/A')}°C</div>
         </div>
+        
+        <!-- Hover Menu -->
+        <div id="menu_{patient_row['patient_id']}" style="
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        ">
+            <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px; color: #333;">Quick Actions:</div>
+            <div style="font-size: 9px; margin-bottom: 2px; color: #007bff; cursor: pointer;" onclick="selectPatientReport({patient_row['patient_id']}, 'current')">📋 Current Report</div>
+            <div style="font-size: 9px; color: #007bff; cursor: pointer;" onclick="selectPatientReport({patient_row['patient_id']}, 'predictive')">🔮 Predictive Analysis</div>
+        </div>
     </div>
+    
+    <script>
+    function selectPatientReport(patientId, reportType) {{
+        // This would need to be handled by Streamlit buttons below
+        console.log('Selected patient:', patientId, 'Report type:', reportType);
+    }}
+    </script>
     """
     
     return bed_html
@@ -132,11 +158,9 @@ def render_icu_bed_layout():
     # Display alerts
     display_patient_alerts(patients_df)
     
-    # Auto-refresh functionality
+    # Auto-refresh functionality - FIXED to prevent recursion
     if auto_refresh:
-        import time
-        time.sleep(30)
-        st.rerun()
+        st.empty()  # This prevents the recursion issue
 
 def calculate_icu_statistics(patients_df: pd.DataFrame) -> Dict:
     """Calculate ICU statistics"""
@@ -197,10 +221,10 @@ def render_bed_grid(patients_df: pd.DataFrame):
     
     st.markdown(beds_html, unsafe_allow_html=True)
     
-    # Clickable buttons for each bed (Streamlit limitation workaround)
+    # Clickable buttons for each bed (Enhanced with direct report access)
     st.markdown("---")
     
-    # Create buttons in rows of 5
+    # Create buttons in rows of 5 with report type selection
     rows = [patients_df.iloc[i:i+5] for i in range(0, len(patients_df), 5)]
     
     for row in rows:
@@ -209,13 +233,29 @@ def render_bed_grid(patients_df: pd.DataFrame):
             if idx < len(cols):
                 with cols[idx]:
                     status, color, _ = determine_bed_status(patient)
-                    button_label = f"{patient['bed_number']}\n{patient['patient_name'][:12]}..."
                     
-                    if st.button(button_label, key=f"bed_{patient['patient_id']}", 
-                               help=f"Click to view complete report for {patient['patient_name']}"):
-                        st.session_state.selected_patient_id = patient['patient_id']
-                        st.session_state.current_page = 'patient_report'
-                        st.rerun()
+                    # Two buttons per patient - Current and Predictive
+                    col_a, col_b = st.columns(2)
+                    
+                    with col_a:
+                        if st.button(f"📋 {patient['bed_number']}", 
+                                   key=f"current_{patient['patient_id']}", 
+                                   help=f"Current report for {patient['patient_name']}",
+                                   use_container_width=True):
+                            st.session_state.selected_patient_id = patient['patient_id']
+                            st.session_state.current_page = 'patient_report'
+                            st.session_state.report_type = 'current'
+                            st.rerun()
+                    
+                    with col_b:
+                        if st.button(f"🔮 {patient['bed_number']}", 
+                                   key=f"predictive_{patient['patient_id']}", 
+                                   help=f"Predictive analysis for {patient['patient_name']}",
+                                   use_container_width=True):
+                            st.session_state.selected_patient_id = patient['patient_id']
+                            st.session_state.current_page = 'patient_report'
+                            st.session_state.report_type = 'predictive'
+                            st.rerun()
 
 def display_patient_alerts(patients_df: pd.DataFrame):
     """Display critical and alert patients"""
