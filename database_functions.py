@@ -1,28 +1,19 @@
-import psycopg2
+import psycopg
 import pandas as pd
 import streamlit as st
 from typing import Dict, List, Tuple, Optional
 
-# Database connection function
 @st.cache_resource
 def create_connection():
     """Create Supabase PostgreSQL database connection"""
     try:
-        # Supabase connection using psycopg2
-        connection = psycopg2.connect(
-            host=st.secrets["supabase"]["host"],
-            database=st.secrets["supabase"]["database"],
-            user=st.secrets["supabase"]["user"],
-            password=st.secrets["supabase"]["password"],
-            port=st.secrets["supabase"]["port"],
-            sslmode='require'  # Supabase requires SSL
-        )
+        connection_string = f"postgresql://{st.secrets['supabase']['user']}:{st.secrets['supabase']['password']}@{st.secrets['supabase']['host']}:{st.secrets['supabase']['port']}/{st.secrets['supabase']['database']}?sslmode=require"
+        connection = psycopg.connect(connection_string)
         return connection
-    except psycopg2.Error as e:
+    except psycopg.Error as e:
         st.error(f"Supabase connection error: {e}")
         return None
 
-# Data fetching functions
 @st.cache_data(ttl=30)
 def fetch_all_patients() -> pd.DataFrame:
     """Fetch all patients with their current status and vital signs"""
@@ -89,11 +80,11 @@ def fetch_patient_details(patient_id: int) -> Optional[pd.Series]:
         ps.notes
     FROM patients p
     LEFT JOIN patient_status ps ON p.patient_id = ps.patient_id
-    WHERE p.patient_id = %s
+    WHERE p.patient_id = %(patient_id)s
     """
     
     try:
-        df = pd.read_sql(query, conn, params=(patient_id,))
+        df = pd.read_sql(query, conn, params={"patient_id": patient_id})
         conn.close()
         return df.iloc[0] if not df.empty else None
     except Exception as e:
@@ -111,13 +102,13 @@ def fetch_patient_vitals_history(patient_id: int, hours: int = 48) -> pd.DataFra
     
     query = """
     SELECT * FROM vital_signs 
-    WHERE patient_id = %s 
+    WHERE patient_id = %(patient_id)s 
     ORDER BY recorded_at DESC 
-    LIMIT %s
+    LIMIT %(hours)s
     """
     
     try:
-        df = pd.read_sql(query, conn, params=(patient_id, hours))
+        df = pd.read_sql(query, conn, params={"patient_id": patient_id, "hours": hours})
         conn.close()
         return df
     except Exception as e:
@@ -148,12 +139,12 @@ def fetch_patient_lab_results(patient_id: int) -> pd.DataFrame:
             ELSE 'normal'
         END as status
     FROM lab_results 
-    WHERE patient_id = %s 
+    WHERE patient_id = %(patient_id)s 
     ORDER BY test_date DESC
     """
     
     try:
-        df = pd.read_sql(query, conn, params=(patient_id,))
+        df = pd.read_sql(query, conn, params={"patient_id": patient_id})
         conn.close()
         return df
     except Exception as e:
