@@ -63,7 +63,7 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
             <div style="color: {bed_color}; font-size: 20px; font-weight: bold; margin-bottom: 8px;">
                 {patient_row['bed_number']}
             </div>
-            <div style="width: 16px; height: 16px; background: {bed_color}; border-radius: 50%; margin: 0 auto 10px auto;"></div>
+            <i class="fas fa-bed" style="font-size: 24px; color: {bed_color}; margin: 0 auto 10px auto;"></i>
         </div>
         
         <div style="text-align: center; flex-grow: 1;">
@@ -91,11 +91,11 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
 def render_icu_bed_layout():
     """Render the main ICU bed layout page"""
     
-    # Page header
+    # Page header - Updated to match main app styling
     st.markdown("""
-    <div style="background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; text-align: center;">
-        <h1 style="margin: 0;">🏥 GAYA-ICU - Intensive Care Unit</h1>
-        <p style="margin: 10px 0 0 0; font-size: 16px;">Real-Time Monitoring - Bed Layout</p>
+    <div style="background: linear-gradient(135deg, #B0E0E6 0%, #87CEEB 100%); color: white; padding: 25px; margin-bottom: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 12px rgba(135, 206, 235, 0.3);">
+        <h1 style="margin: 0; font-size: 2.2rem; font-weight: 600;"><i class="fas fa-hospital medical-icon"></i>GAYA-ICU - Intensive Care Unit</h1>
+        <p style="margin: 12px 0 0 0; font-size: 1.1rem; opacity: 0.95;">Real-Time Monitoring - Bed Layout</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -103,12 +103,12 @@ def render_icu_bed_layout():
     col1, col2, col3 = st.columns([1, 1, 2])
     
     with col1:
-        if st.button("🔄 Refresh Data"):
+        if st.button("🔄 Refresh Data", help="Clear cache and reload patient data"):
             st.cache_data.clear()
             st.rerun()
     
     with col2:
-        auto_refresh = st.checkbox("Auto-refresh (30s)", value=False)
+        auto_refresh = st.checkbox("Auto-refresh (30s)", value=False, help="Automatically refresh data every 30 seconds")
     
     with col3:
         st.write(f"**Last updated:** {datetime.now().strftime('%m/%d/%Y %H:%M:%S')}")
@@ -132,8 +132,10 @@ def render_icu_bed_layout():
     # Display alerts
     display_patient_alerts(patients_df)
     
-    # Auto-refresh
+    # Auto-refresh functionality
     if auto_refresh:
+        import time
+        time.sleep(30)
         st.rerun()
 
 def calculate_icu_statistics(patients_df: pd.DataFrame) -> Dict:
@@ -156,8 +158,8 @@ def calculate_icu_statistics(patients_df: pd.DataFrame) -> Dict:
 def display_icu_statistics(stats: Dict):
     """Display ICU statistics dashboard"""
     st.markdown("""
-    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-        <h3 style="text-align: center; margin-bottom: 20px; color: #333;">ICU Statistics</h3>
+    <div style="background: linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%); padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 2px solid #B0E0E6; box-shadow: 0 2px 8px rgba(135, 206, 235, 0.2);">
+        <h3 style="text-align: center; margin-bottom: 20px; color: #333;"><i class="fas fa-chart-bar medical-icon"></i>ICU Statistics</h3>
     </div>
     """, unsafe_allow_html=True)
     
@@ -180,7 +182,7 @@ def display_icu_statistics(stats: Dict):
 
 def render_bed_grid(patients_df: pd.DataFrame):
     """Render the bed grid layout"""
-    st.markdown("### Bed Layout - ICU")
+    st.markdown("### <i class='fas fa-bed'></i> Bed Layout - ICU", unsafe_allow_html=True)
     st.markdown("**Click on the bed number below to access the patient report**")
     
     # Create bed icons HTML
@@ -269,19 +271,19 @@ def display_patient_alerts(patients_df: pd.DataFrame):
 def get_bed_status_legend():
     """Return HTML for bed status legend"""
     return """
-    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <h4 style="margin-bottom: 10px; color: #333;">Bed Status Legend:</h4>
-        <div style="display: flex; justify-content: space-around; align-items: center;">
+    <div style="background: linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%); padding: 20px; border-radius: 12px; margin: 25px 0; border: 2px solid #B0E0E6; box-shadow: 0 2px 8px rgba(135, 206, 235, 0.2);">
+        <h4 style="margin-bottom: 15px; color: #333; text-align: center;"><i class="fas fa-info-circle medical-icon"></i>Bed Status Legend:</h4>
+        <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 20px;">
             <div style="display: flex; align-items: center;">
-                <div style="width: 20px; height: 20px; background: #28a745; border-radius: 50%; margin-right: 8px;"></div>
+                <i class="fas fa-bed" style="color: #28a745; font-size: 20px; margin-right: 8px;"></i>
                 <span><strong>Green:</strong> Stable (Risk < 30%)</span>
             </div>
             <div style="display: flex; align-items: center;">
-                <div style="width: 20px; height: 20px; background: #ffc107; border-radius: 50%; margin-right: 8px;"></div>
+                <i class="fas fa-bed" style="color: #ffc107; font-size: 20px; margin-right: 8px;"></i>
                 <span><strong>Yellow:</strong> Alert (Risk 30-60%)</span>
             </div>
             <div style="display: flex; align-items: center;">
-                <div style="width: 20px; height: 20px; background: #dc3545; border-radius: 50%; margin-right: 8px;"></div>
+                <i class="fas fa-bed" style="color: #dc3545; font-size: 20px; margin-right: 8px;"></i>
                 <span><strong>Red:</strong> Critical (Risk > 60%)</span>
             </div>
         </div>
