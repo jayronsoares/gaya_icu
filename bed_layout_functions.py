@@ -71,16 +71,16 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
                 {patient_row['patient_name']}
             </div>
             <div style="font-size: 12px; margin-bottom: 3px; color: #666;">
-                <strong>Idade:</strong> {patient_row['age']} | <strong>Sexo:</strong> {patient_row['gender']}
+                <strong>Age:</strong> {patient_row['age']} | <strong>Gender:</strong> {patient_row['gender']}
             </div>
             <div style="font-size: 11px; margin-bottom: 5px; color: #666;">
-                <strong>Diagnóstico:</strong> {short_diagnosis}
+                <strong>Diagnosis:</strong> {short_diagnosis}
             </div>
         </div>
         
         <div style="text-align: center; font-size: 11px; color: #666;">
-            <div><strong>Dias:</strong> {days_admitted} | <strong>Risco:</strong> {risk_score:.0f}%</div>
-            <div><strong>FC:</strong> {patient_row.get('heart_rate', 'N/A')} | <strong>SpO2:</strong> {patient_row.get('oxygen_saturation', 'N/A')}%</div>
+            <div><strong>Days:</strong> {days_admitted} | <strong>Risk:</strong> {risk_score:.0f}%</div>
+            <div><strong>HR:</strong> {patient_row.get('heart_rate', 'N/A')} | <strong>SpO2:</strong> {patient_row.get('oxygen_saturation', 'N/A')}%</div>
             <div><strong>Temp:</strong> {patient_row.get('temperature', 'N/A')}°C</div>
         </div>
     </div>
@@ -94,8 +94,8 @@ def render_icu_bed_layout():
     # Page header
     st.markdown("""
     <div style="background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; margin-bottom: 20px; border-radius: 10px; text-align: center;">
-        <h1 style="margin: 0;">🏥 GAYA-ICU - Unidade de Terapia Intensiva</h1>
-        <p style="margin: 10px 0 0 0; font-size: 16px;">Monitoramento em Tempo Real - Layout dos Leitos</p>
+        <h1 style="margin: 0;">🏥 GAYA-ICU - Intensive Care Unit</h1>
+        <p style="margin: 10px 0 0 0; font-size: 16px;">Real-Time Monitoring - Bed Layout</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -103,7 +103,7 @@ def render_icu_bed_layout():
     col1, col2, col3 = st.columns([1, 1, 2])
     
     with col1:
-        if st.button("🔄 Atualizar Dados"):
+        if st.button("🔄 Refresh Data"):
             st.cache_data.clear()
             st.rerun()
     
@@ -111,13 +111,13 @@ def render_icu_bed_layout():
         auto_refresh = st.checkbox("Auto-refresh (30s)", value=False)
     
     with col3:
-        st.write(f"**Última atualização:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        st.write(f"**Last updated:** {datetime.now().strftime('%m/%d/%Y %H:%M:%S')}")
     
     # Fetch patient data
     patients_df = fetch_all_patients()
     
     if patients_df.empty:
-        st.error("⚠️ Nenhum dado de paciente disponível. Verifique a conexão com o banco de dados.")
+        st.error("⚠️ No patient data available. Check database connection.")
         return
     
     # Calculate statistics
@@ -157,31 +157,31 @@ def display_icu_statistics(stats: Dict):
     """Display ICU statistics dashboard"""
     st.markdown("""
     <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-        <h3 style="text-align: center; margin-bottom: 20px; color: #333;">Estatísticas da UTI</h3>
+        <h3 style="text-align: center; margin-bottom: 20px; color: #333;">ICU Statistics</h3>
     </div>
     """, unsafe_allow_html=True)
     
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
-        st.metric("Total de Pacientes", stats['total'])
+        st.metric("Total Patients", stats['total'])
     
     with col2:
-        st.metric("Estáveis", stats['stable'], delta=None, delta_color="normal")
+        st.metric("Stable", stats['stable'], delta=None, delta_color="normal")
     
     with col3:
-        st.metric("Atenção", stats['alert'], delta=None, delta_color="normal")
+        st.metric("Alert", stats['alert'], delta=None, delta_color="normal")
     
     with col4:
-        st.metric("Críticos", stats['critical'], delta=None, delta_color="inverse")
+        st.metric("Critical", stats['critical'], delta=None, delta_color="inverse")
     
     with col5:
-        st.metric("Risco Médio", f"{stats['avg_risk']:.1f}%", delta=None)
+        st.metric("Average Risk", f"{stats['avg_risk']:.1f}%", delta=None)
 
 def render_bed_grid(patients_df: pd.DataFrame):
     """Render the bed grid layout"""
-    st.markdown("### Layout dos Leitos - UTI")
-    st.markdown("**Clique no número do leito abaixo para acessar o relatório do paciente**")
+    st.markdown("### Bed Layout - ICU")
+    st.markdown("**Click on the bed number below to access the patient report**")
     
     # Create bed icons HTML
     beds_html = '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 20px 0;">'
@@ -210,7 +210,7 @@ def render_bed_grid(patients_df: pd.DataFrame):
                     button_label = f"{patient['bed_number']}\n{patient['patient_name'][:12]}..."
                     
                     if st.button(button_label, key=f"bed_{patient['patient_id']}", 
-                               help=f"Clique para ver relatório completo de {patient['patient_name']}"):
+                               help=f"Click to view complete report for {patient['patient_name']}"):
                         st.session_state.selected_patient_id = patient['patient_id']
                         st.session_state.current_page = 'patient_report'
                         st.rerun()
@@ -231,22 +231,22 @@ def display_patient_alerts(patients_df: pd.DataFrame):
     # Critical alerts
     if critical_patients:
         st.markdown("---")
-        st.error("🚨 **ALERTAS CRÍTICOS - AÇÃO IMEDIATA NECESSÁRIA**")
+        st.error("🚨 **CRITICAL ALERTS - IMMEDIATE ACTION REQUIRED**")
         
         for patient, risk_score in critical_patients:
-            with st.expander(f"🔴 {patient['bed_number']} - {patient['patient_name']} (Risco: {risk_score:.0f}%)", expanded=True):
+            with st.expander(f"🔴 {patient['bed_number']} - {patient['patient_name']} (Risk: {risk_score:.0f}%)", expanded=True):
                 col1, col2 = st.columns([2, 1])
                 
                 with col1:
-                    st.write(f"**Diagnóstico:** {patient['diagnosis']}")
-                    st.write(f"**Sinais Vitais Atuais:**")
-                    st.write(f"- FC: {patient.get('heart_rate', 'N/A')} bpm")
-                    st.write(f"- PA: {patient.get('blood_pressure_systolic', 'N/A')}/{patient.get('blood_pressure_diastolic', 'N/A')} mmHg")
+                    st.write(f"**Diagnosis:** {patient['diagnosis']}")
+                    st.write(f"**Current Vital Signs:**")
+                    st.write(f"- HR: {patient.get('heart_rate', 'N/A')} bpm")
+                    st.write(f"- BP: {patient.get('blood_pressure_systolic', 'N/A')}/{patient.get('blood_pressure_diastolic', 'N/A')} mmHg")
                     st.write(f"- Temp: {patient.get('temperature', 'N/A')} °C")
                     st.write(f"- SpO2: {patient.get('oxygen_saturation', 'N/A')} %")
                 
                 with col2:
-                    if st.button(f"📋 Relatório Completo", key=f"critical_report_{patient['patient_id']}"):
+                    if st.button(f"📋 Complete Report", key=f"critical_report_{patient['patient_id']}"):
                         st.session_state.selected_patient_id = patient['patient_id']
                         st.session_state.current_page = 'patient_report'
                         st.rerun()
@@ -254,14 +254,14 @@ def display_patient_alerts(patients_df: pd.DataFrame):
     # Alert patients
     if alert_patients:
         st.markdown("---")
-        st.warning("⚠️ **PACIENTES QUE REQUEREM ATENÇÃO**")
+        st.warning("⚠️ **PATIENTS REQUIRING ATTENTION**")
         
         for patient, risk_score in alert_patients:
-            with st.expander(f"🟡 {patient['bed_number']} - {patient['patient_name']} (Risco: {risk_score:.0f}%)"):
-                st.write(f"**Diagnóstico:** {patient['diagnosis']}")
-                st.write(f"**Observações:** {patient.get('notes', 'Monitoramento contínuo recomendado')}")
+            with st.expander(f"🟡 {patient['bed_number']} - {patient['patient_name']} (Risk: {risk_score:.0f}%)"):
+                st.write(f"**Diagnosis:** {patient['diagnosis']}")
+                st.write(f"**Notes:** {patient.get('notes', 'Continuous monitoring recommended')}")
                 
-                if st.button(f"Ver Relatório", key=f"alert_report_{patient['patient_id']}"):
+                if st.button(f"View Report", key=f"alert_report_{patient['patient_id']}"):
                     st.session_state.selected_patient_id = patient['patient_id']
                     st.session_state.current_page = 'patient_report'
                     st.rerun()
@@ -270,19 +270,19 @@ def get_bed_status_legend():
     """Return HTML for bed status legend"""
     return """
     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
-        <h4 style="margin-bottom: 10px; color: #333;">Legenda dos Status dos Leitos:</h4>
+        <h4 style="margin-bottom: 10px; color: #333;">Bed Status Legend:</h4>
         <div style="display: flex; justify-content: space-around; align-items: center;">
             <div style="display: flex; align-items: center;">
                 <div style="width: 20px; height: 20px; background: #28a745; border-radius: 50%; margin-right: 8px;"></div>
-                <span><strong>Verde:</strong> Estável (Risco < 30%)</span>
+                <span><strong>Green:</strong> Stable (Risk < 30%)</span>
             </div>
             <div style="display: flex; align-items: center;">
                 <div style="width: 20px; height: 20px; background: #ffc107; border-radius: 50%; margin-right: 8px;"></div>
-                <span><strong>Amarelo:</strong> Atenção (Risco 30-60%)</span>
+                <span><strong>Yellow:</strong> Alert (Risk 30-60%)</span>
             </div>
             <div style="display: flex; align-items: center;">
                 <div style="width: 20px; height: 20px; background: #dc3545; border-radius: 50%; margin-right: 8px;"></div>
-                <span><strong>Vermelho:</strong> Crítico (Risco > 60%)</span>
+                <span><strong>Red:</strong> Critical (Risk > 60%)</span>
             </div>
         </div>
     </div>
