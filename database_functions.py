@@ -107,13 +107,13 @@ def fetch_all_patients() -> pd.DataFrame:
     
     try:
         df = pd.read_sql(query, conn)
-        conn.close()
         return df
     except Exception as e:
         st.error(f"Error fetching patients: {e}")
+        return pd.DataFrame()
+    finally:
         if conn:
             conn.close()
-        return pd.DataFrame()
 
 @st.cache_data(ttl=60)
 def fetch_patient_details(patient_id: int) -> Optional[pd.Series]:
