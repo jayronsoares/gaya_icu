@@ -15,14 +15,15 @@ def create_connection():
             database = st.secrets['database']
             port = st.secrets['port']
         except KeyError:
-            # Fallback to hardcoded values
+            # Fallback to hardcoded values - REPLACE WITH YOUR ACTUAL SUPABASE PASSWORD
             user = "postgres"
-            password = "M1ner@!Bemisa"
+            password = "M1ner@!Bemisa"  # Get this from Supabase Settings > Database
             host = "db.izpjfvbgxhwrsxycyvdf.supabase.co"
             database = "postgres"
             port = 5432
         
-        connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}?sslmode=require"
+        # Use the exact connection string format from Supabase
+        connection_string = f"postgresql://{user}:{password}@{host}:{port}/{database}"
         connection = psycopg2.connect(connection_string)
         return connection
     except psycopg2.Error as e:
