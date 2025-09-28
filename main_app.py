@@ -16,7 +16,7 @@ def load_custom_css():
     st.markdown("""
     <style>
     .main-header {
-        background: linear-gradient(90deg, #B0E0E6 0%, #87CEEB 100%);
+        background: linear-gradient(90deg, #87CEEB 0%, #87CEEB 100%);
         color: white;
         padding: 20px;
         border-radius: 10px;
@@ -25,7 +25,7 @@ def load_custom_css():
     }
     
     .header-container {
-        background: linear-gradient(90deg, #B0E0E6 0%, #87CEEB 100%);
+        background: linear-gradient(90deg, #87CEEB 0%, #87CEEB 100%);
         color: white;
         padding: 20px;
         margin-bottom: 30px;
@@ -116,7 +116,7 @@ def render_patient_report_page():
     if not st.session_state.get('report_type'):
         st.markdown("""
         <div class="main-header">
-            <h2>Select Report Type</h2>
+            <h2><i class="fas fa-clipboard-list medical-icon"></i>Select Report Type</h2>
             <p>Choose between current patient report or predictive analysis</p>
         </div>
         """, unsafe_allow_html=True)
@@ -125,8 +125,8 @@ def render_patient_report_page():
         
         with col1:
             st.markdown("""
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; margin: 10px;">
-                <h3>📋 Current Report</h3>
+            <div class="report-card">
+                <h3><i class="fas fa-file-medical medical-icon"></i>Current Report</h3>
                 <p>Complete patient profile with current data, vital signs, test results and clinical history</p>
             </div>
             """, unsafe_allow_html=True)
@@ -137,8 +137,8 @@ def render_patient_report_page():
         
         with col2:
             st.markdown("""
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; margin: 10px;">
-                <h3>🔮 Predictive Report</h3>
+            <div class="report-card">
+                <h3><i class="fas fa-chart-line medical-icon"></i>Predictive Report</h3>
                 <p>Statistical analysis with sepsis predictions, length of stay and AI-based recommendations</p>
             </div>
             """, unsafe_allow_html=True)
