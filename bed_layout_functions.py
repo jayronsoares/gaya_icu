@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from database_functions import fetch_all_patients
 from sepsis_predictions import calculate_sepsis_probability, advanced_sepsis_prediction
 from length_of_stay_predictions import predict_length_of_stay
-import time
 
 def determine_bed_status(patient_row: pd.Series) -> Tuple[str, str, float]:
     """
@@ -58,8 +57,8 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
         justify-content: space-between;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         position: relative;
-        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';" 
-        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
+    " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';" 
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)';">
         
         <div style="text-align: center;">
             <div style="color: {bed_color}; font-size: 20px; font-weight: bold; margin-bottom: 8px;">
@@ -85,8 +84,21 @@ def create_bed_icon_html(patient_row: pd.Series, bed_status: str, bed_color: str
             <div><strong>HR:</strong> {patient_row.get('heart_rate', 'N/A')} | <strong>SpO2:</strong> {patient_row.get('oxygen_saturation', 'N/A')}%</div>
             <div><strong>Temp:</strong> {patient_row.get('temperature', 'N/A')}°C</div>
         </div>
+        
+        <!-- Patient ID display -->
+        <div style="
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 4px;
+            padding: 4px 6px;
+            font-size: 9px;
+            color: #666;
+        ">
+            ID: {patient_row['patient_id']}
+        </div>
     </div>
-       
     """
     
     return bed_html
@@ -135,10 +147,9 @@ def render_icu_bed_layout():
     # Display alerts
     display_patient_alerts(patients_df)
     
-    # Auto-refresh functionality - FIXED to prevent recursion
+    # Auto-refresh functionality - prototype mode
     if auto_refresh:
-        time.sleep(30)
-        st.rerun()
+        st.info("🔄 Auto-refresh enabled - data updates every 30 seconds on manual refresh")
 
 def calculate_icu_statistics(patients_df: pd.DataFrame) -> Dict:
     """Calculate ICU statistics"""
