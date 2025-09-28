@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from database_functions import fetch_all_patients
 from sepsis_predictions import calculate_sepsis_probability, advanced_sepsis_prediction
 from length_of_stay_predictions import predict_length_of_stay
+import time
 
 def determine_bed_status(patient_row: pd.Series) -> Tuple[str, str, float]:
     """
@@ -160,7 +161,8 @@ def render_icu_bed_layout():
     
     # Auto-refresh functionality - FIXED to prevent recursion
     if auto_refresh:
-        st.empty()  # This prevents the recursion issue
+        time.sleep(30)
+        st.rerun()
 
 def calculate_icu_statistics(patients_df: pd.DataFrame) -> Dict:
     """Calculate ICU statistics"""
