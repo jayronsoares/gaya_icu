@@ -16,7 +16,7 @@ def load_custom_css():
     st.markdown("""
     <style>
     .main-header {
-        background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+        background: linear-gradient(90deg, #87CEEB 0%, #4682B4 100%);
         color: white;
         padding: 20px;
         border-radius: 10px;
@@ -24,29 +24,42 @@ def load_custom_css():
         margin-bottom: 20px;
     }
     
-    .back-button {
-        background: #007bff;
+    .header-container {
+        background: linear-gradient(90deg, #87CEEB 0%, #4682B4 100%);
         color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        text-decoration: none;
-        display: inline-block;
-        margin-bottom: 20px;
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 10px;
     }
     
-    .report-type-button {
-        background: #28a745;
-        color: white;
-        padding: 15px 30px;
-        border-radius: 8px;
-        border: none;
-        font-size: 16px;
-        margin: 10px;
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px 0;
+        padding: 20px;
+        background: #E6F3FF;
+        border-radius: 10px;
+        border: 2px solid #87CEEB;
+    }
+    
+    .bed-icon {
+        border: 3px solid;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
         cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        box-shadow: 0 4px 8px rgba(135, 206, 235, 0.3);
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     
-    .report-type-button:hover {
-        background: #218838;
+    .bed-icon:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(135, 206, 235, 0.5);
     }
     </style>
     """, unsafe_allow_html=True)
