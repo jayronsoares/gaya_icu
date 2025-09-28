@@ -5,20 +5,20 @@ from typing import Dict, List, Tuple, Optional
 
 @st.cache_resource
 def create_connection():
-    """Create Supabase PostgreSQL database connection"""
+    """Create PostgreSQL database connection"""
     try:
-        connection_string = f"postgresql://{st.secrets['supabase']['user']}:{st.secrets['supabase']['password']}@{st.secrets['supabase']['host']}:{st.secrets['supabase']['port']}/{st.secrets['supabase']['database']}?sslmode=require"
+        connection_string = f"postgresql://{st.secrets['user']}:{st.secrets['password']}@{st.secrets['host']}:{st.secrets['port']}/{st.secrets['database']}?sslmode=require"
         connection = psycopg2.connect(
-            host=st.secrets['supabase']['host'],
-            database=st.secrets['supabase']['database'],
-            user=st.secrets['supabase']['user'],
-            password=st.secrets['supabase']['password'],
-            port=st.secrets['supabase']['port'],
+            host=st.secrets['host'],
+            database=st.secrets['database'],
+            user=st.secrets['user'],
+            password=st.secrets['password'],
+            port=st.secrets['port'],
             sslmode='require'
         )
         return connection
     except psycopg2.Error as e:
-        st.error(f"Supabase connection error: {e}")
+        st.error(f"Database connection error: {e}")
         return None
 
 @st.cache_data(ttl=30)
@@ -170,7 +170,7 @@ def test_database_connection() -> Tuple[bool, str]:
             result = cursor.fetchone()
             cursor.close()
             conn.close()
-            return True, "Supabase connection successful"
+            return True, "Database connection successful"
         else:
             return False, "Failed to establish connection"
     except Exception as e:
