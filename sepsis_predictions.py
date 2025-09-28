@@ -23,10 +23,9 @@ def calculate_sirs_score(vitals: Dict) -> int:
     if rr > 20:
         score += 1
     
-    # White blood cell count criteria (simulated for now)
-    # In real implementation, this would come from lab results
-    wbc = vitals.get('white_blood_cells', 7.0)
-    if wbc > 12.0 or wbc < 4.0:
+    # White blood cell count criteria - only count if available
+    wbc = vitals.get('white_blood_cells')
+    if wbc is not None and (wbc > 12.0 or wbc < 4.0):
         score += 1
     
     return score
@@ -39,8 +38,16 @@ def calculate_sepsis_probability(vitals: Dict, lab_results: pd.DataFrame = None)
     base_probability = 0.0
     risk_factors = []
     
+    # Integrate WBC from lab results if available
+    vitals_with_wbc = vitals.copy()
+    if lab_results is not None and not lab_results.empty:
+        wbc_labs = lab_results[lab_results['test_name'] == 'White Blood Cells']
+        if not wbc_labs.empty:
+            wbc_value = wbc_labs.iloc[0]['test_value']
+            vitals_with_wbc['white_blood_cells'] = wbc_value
+    
     # SIRS Score Component (0-40% based on SIRS criteria)
-    sirs_score = calculate_sirs_score(vitals)
+    sirs_score = calculate_sirs_score(vitals_with_wbc)
     sirs_probability = min(sirs_score * 10, 40)  # Max 40% from SIRS
     base_probability += sirs_probability
     
@@ -178,13 +185,25 @@ def advanced_sepsis_prediction(patient_data: Dict, vitals_history: pd.DataFrame,
     """
     Advanced sepsis prediction combining multiple data sources
     """
-    current_vitals = {
-        'temperature': patient_data.get('temperature', 37.0),
-        'heart_rate': patient_data.get('heart_rate', 80),
-        'respiratory_rate': patient_data.get('respiratory_rate', 16),
-        'oxygen_saturation': patient_data.get('oxygen_saturation', 98),
-        'blood_pressure_systolic': patient_data.get('blood_pressure_systolic', 120)
-    }
+    # Get current vitals from most recent vital signs
+    if not vitals_history.empty:
+        latest_vitals = vitals_history.iloc[0]
+        current_vitals = {
+            'temperature': latest_vitals.get('temperature', 37.0),
+            'heart_rate': latest_vitals.get('heart_rate', 80),
+            'respiratory_rate': latest_vitals.get('respiratory_rate', 16),
+            'oxygen_saturation': latest_vitals.get('oxygen_saturation', 98),
+            'blood_pressure_systolic': latest_vitals.get('blood_pressure_systolic', 120)
+        }
+    else:
+        # Fallback to defaults if no vitals history
+        current_vitals = {
+            'temperature': patient_data.get('temperature', 37.0),
+            'heart_rate': patient_data.get('heart_rate', 80),
+            'respiratory_rate': patient_data.get('respiratory_rate', 16),
+            'oxygen_saturation': patient_data.get('oxygen_saturation', 98),
+            'blood_pressure_systolic': patient_data.get('blood_pressure_systolic', 120)
+        }
     
     # Calculate current sepsis probability
     probability, status, risk_factors = calculate_sepsis_probability(current_vitals, lab_results)
