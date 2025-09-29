@@ -68,7 +68,7 @@ def render_icu_bed_layout():
     
     with col2:
         # AUTO-REFRESH DISABLED to prevent infinite recursion
-        st.write("Auto-refresh: Disabled")
+        st.write("Auto-refresh: 60 seconds")
         # auto_refresh = st.checkbox("Auto-refresh (30s)", value=False, help="Automatically refresh data every 30 seconds")
     
     with col3:
